@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  api:
+    container_name: "${NODE_ENV}"
+    image: "${NODE_ENV}"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    build: 
+      context: ./app
+      target: "${NODE_ENV}"
+      dockerfile: Dockerfile
+    entrypoint: ["npm", "run", "start:${NODE_ENV}"]
+    env_file:
+      - .env
+    ports:
+      - 3306
+    networks:
+      - nestjs-network
+    
