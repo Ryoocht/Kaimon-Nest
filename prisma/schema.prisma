@@ -11,19 +11,22 @@ datasource db {
 }
 
 model User {
-  // PK
-  id          String           @id @default(uuid())
   // Fields
-  firstName   String
-  lastName    String
-  email       String           @unique
-  phoneNumber String           @unique
-  password    String
-  avatar      String?
-  role        UserRoleEnumType @default(COMMON)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  Store       Store[]
+  id          String           @id @default(uuid())
+  firstName   String           @map("first_name")
+  lastName    String           @map("last_name")
+  email       String           @unique @map("email")
+  password    String           @map("password")
+  phoneNumber String           @unique @map("phone_number")
+  avatar      String?          @map("avatar")
+  role        UserRoleEnumType @default(COMMON) @map("role")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  // References
+  address    Address?
+  stores     Store[]
+  favourites Favourite[]
 }
 
 enum UserRoleEnumType {
@@ -32,47 +35,107 @@ enum UserRoleEnumType {
 }
 
 model Address {
-  id           String @id @default(uuid())
-  streetNumber String
-  streetName   String
-  suburb       String
-  state        String
-  postCode     String
-  store        Store?
+  // Fields
+  fullAddress   String @map("full_address")
+  streetName    String @map("street_name")
+  streetNumber  String @map("street_number")
+  googlePlaceId String @map("google_placeId")
+  lng           Float  @map("lng")
+  lat           Float  @map("lat")
+  state         String @map("state")
+  country       String @map("country")
+  city          String @map("city")
+  suburb        String @map("suburb")
+  postcode      String @map("postcode") @db.VarChar(10)
+
+  // Foreign Keys
+  userId  String @unique @map("user_id")
+  storeId String @unique @map("store_id")
+
+  // References
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@map("address")
 }
 
 model Store {
-  id          String         @id @default(uuid())
-  name        String
-  email       String
-  password    String
-  phoneNumber String
-  owner       User           @relation(fields: [userId], references: [id])
-  address     Address        @relation(fields: [addressId], references: [id])
-  userId      String         @unique
-  addressId   String         @unique
-  products    StoreProduct[]
+  // Fields
+  id          String   @id @default(uuid())
+  name        String   @map("name")
+  email       String   @map("email")
+  password    String   @map("password")
+  phoneNumber String   @map("phone_number")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Foreign Keys
+  userId    String @unique @map("user_id")
+  addressId String @unique @map("address_id")
+
+  // References
+  owner    User           @relation(fields: [userId], references: [id])
+  address  Address?
+  products StoreProduct[]
+  reviews  Review[]
 
   @@map("store")
 }
 
 model Product {
-  id             String         @id @default(uuid())
-  name           String
-  description    String
-  productImage   String
-  price          Int
-  wholeSalePrice Int
-  stores         StoreProduct[]
+  // Fields
+  id             String   @id @default(uuid())
+  name           String   @map("name")
+  description    String   @map("description")
+  productImage   String   @map("product_image")
+  price          Int      @map("price")
+  wholeSalePrice Int      @map("whole_sale_price")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // References
+  stores     StoreProduct[]
+  reviews    Review[]
+  favourites Favourite[]
+
+  @@map("product")
 }
 
 model StoreProduct {
-  store     Store    @relation(fields: [storeId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
-  storeId   String   @unique
-  productId String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Fields
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Foreign Keys
+  storeId   String @unique @map("store_id")
+  productId String @unique @map("product_id")
+
+  // References
+  store   Store   @relation(fields: [storeId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  // Fields
+  id String @id @default(uuid())
+
+  // References
+  stores   Store[]
+  products Product[]
+
+  @@map("review")
+}
+
+model Favourite {
+  id String @id @default(uuid())
+
+  // Foreign Keys
+  userId    String @unique
+  productId String @unique
+
+  // References
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("favourite")
 }
