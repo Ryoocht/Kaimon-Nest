@@ -6,26 +6,73 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   // PK
-  id          String @id @default(uuid())
+  id          String           @id @default(uuid())
   // Fields
   firstName   String
   lastName    String
-  email       String
-  phoneNumber String
+  email       String           @unique
+  phoneNumber String           @unique
   password    String
   avatar      String?
   role        UserRoleEnumType @default(COMMON)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  Store       Store[]
 }
 
 enum UserRoleEnumType {
   COMMON @map("COMMON")
   ADMIN  @map("ADMIN")
+}
+
+model Address {
+  id           String @id @default(uuid())
+  streetNumber String
+  streetName   String
+  suburb       String
+  state        String
+  postCode     String
+  store        Store?
+
+  @@map("address")
+}
+
+model Store {
+  id          String         @id @default(uuid())
+  name        String
+  email       String
+  password    String
+  phoneNumber String
+  owner       User           @relation(fields: [userId], references: [id])
+  address     Address        @relation(fields: [addressId], references: [id])
+  userId      String         @unique
+  addressId   String         @unique
+  products    StoreProduct[]
+
+  @@map("store")
+}
+
+model Product {
+  id             String         @id @default(uuid())
+  name           String
+  description    String
+  productImage   String
+  price          Int
+  wholeSalePrice Int
+  stores         StoreProduct[]
+}
+
+model StoreProduct {
+  store     Store    @relation(fields: [storeId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  storeId   String   @unique
+  productId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
