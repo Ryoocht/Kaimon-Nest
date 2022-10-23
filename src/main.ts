@@ -17,7 +17,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, { customSiteTitle: 'Kaimon Day' });
 
   // Global Validation Pipe
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
 
   await app.listen(4000);
 }
