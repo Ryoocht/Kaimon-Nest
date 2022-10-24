@@ -9,7 +9,21 @@ export class AuthService {
   constructor(private prisma: PrismaService) {}
 
   async login(dto: LoginDto) {
-    return 'loggin in';
+    // Find the user by email
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+    // If doesn't exist, throw error
+    if (!user) throw new ForbiddenException('Credentials Incorrect');
+    // Compare password
+    const pwdMatches = await argon.verify(user.password, dto.password);
+    // If password incorrect, throw exception
+    if (!pwdMatches) throw new ForbiddenException('Credentials Incorrect');
+    // Return user object
+    delete user.password;
+    return user;
   }
 
   async signup(dto: SignupDto) {
