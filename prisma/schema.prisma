@@ -27,6 +27,8 @@ model User {
   address    Address?
   stores     Store[]
   favourites Favourite[]
+
+  @@map("users")
 }
 
 enum UserRoleEnumType {
@@ -79,7 +81,7 @@ model Store {
   products StoreProduct[]
   reviews  Review[]
 
-  @@map("store")
+  @@map("stores")
 }
 
 model Product {
@@ -98,7 +100,7 @@ model Product {
   reviews    Review[]
   favourites Favourite[]
 
-  @@map("product")
+  @@map("products")
 }
 
 model StoreProduct {
@@ -123,7 +125,7 @@ model Review {
   stores   Store[]
   products Product[]
 
-  @@map("review")
+  @@map("reviews")
 }
 
 model Favourite {
@@ -137,5 +139,5 @@ model Favourite {
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 
-  @@map("favourite")
+  @@map("favourites")
 }

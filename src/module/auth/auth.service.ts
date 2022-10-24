@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
-import { SignupDto } from './dto/signup.dto';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto, SignupDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +25,21 @@ export class AuthService {
         avatar: dto.avatar,
         role: dto.role,
       },
+      // Select Entity to Return
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phoneNumber: true,
+        createdAt: true,
+        password: true,
+      },
     });
+    // Delete Specific Entities
+    delete user.password;
+
+    // Return User Object
     return user;
   }
 }
