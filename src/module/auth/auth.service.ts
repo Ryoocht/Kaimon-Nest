@@ -3,10 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as argon from 'argon2';
 import { LoginDto, SignupDto } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
 
   async login(dto: LoginDto) {
     // Find the user by email
@@ -21,9 +27,8 @@ export class AuthService {
     const pwdMatches = await argon.verify(user.password, dto.password);
     // If password incorrect, throw exception
     if (!pwdMatches) throw new ForbiddenException('Credentials Incorrect');
-    // Return user object
-    delete user.password;
-    return user;
+
+    return this.signToken(user.id, user.email);
   }
 
   async signup(dto: SignupDto) {
@@ -65,5 +70,19 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  async signToken(userId: string, email: string): Promise<string> {
+    const payload = {
+      sub: userId,
+      email,
+    };
+
+    const secret = this.config.get('JWT_SECRET');
+
+    return this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    });
   }
 }
