@@ -28,14 +28,19 @@ export class AuthService {
     // If password incorrect, throw exception
     if (!pwdMatches) throw new ForbiddenException('Credentials Incorrect');
 
-    return this.signToken(user.id, user.email);
+    delete user.password;
+    const accessToken = this.signToken(user.id, user.email);
+    return {
+      accessToken,
+      user,
+    };
   }
 
   async signup(dto: SignupDto) {
     try {
       // Generate the Password Hash
       const hash = await argon.hash(dto.password);
-      
+
       // Save the New User in the DB
       const user = await this.prisma.user.create({
         data: {
@@ -84,7 +89,7 @@ export class AuthService {
     };
 
     const secret = this.config.get('JWT_SECRET');
-
+    // Generate a JWT Token
     const token = this.jwt.signAsync(payload, {
       expiresIn: '15m',
       secret: secret,
