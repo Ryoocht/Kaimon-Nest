@@ -11,4 +11,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'kaimon-jwt') {
       secretOrKey: config.get('JWT_SECRET'),
     });
   }
+  // Return value get throught validate function and access with @Req
+  validate(payload: any) {
+    return payload;
+  }
 }
