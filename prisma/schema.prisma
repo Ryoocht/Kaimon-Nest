@@ -12,16 +12,16 @@ datasource db {
 
 model User {
   // Fields
-  id          String           @id @default(uuid())
-  firstName   String           @map("first_name")
-  lastName    String           @map("last_name")
-  email       String           @unique @map("email")
-  password    String           @map("password")
-  phoneNumber String           @unique @map("phone_number")
-  avatar      String?          @map("avatar")
-  role        UserRoleEnumType @default(COMMON) @map("role")
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  email       String   @unique @map("email")
+  password    String   @map("password")
+  phoneNumber String   @unique @map("phone_number")
+  avatar      String?  @map("avatar")
+  role        Role     @default(USER) @map("role")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // References
   address    Address?
@@ -31,9 +31,10 @@ model User {
   @@map("users")
 }
 
-enum UserRoleEnumType {
-  COMMON @map("COMMON")
-  ADMIN  @map("ADMIN")
+enum Role {
+  USER  @map("USER")
+  OWNER @map("OWNER")
+  ADMIN @map("ADMIN")
 }
 
 model Address {
@@ -72,11 +73,11 @@ model Store {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Foreign Keys
-  userId    String @unique @map("user_id")
+  ownerId   String @unique @map("owner_id")
   addressId String @unique @map("address_id")
 
   // References
-  owner    User           @relation(fields: [userId], references: [id])
+  owner    User           @relation(fields: [ownerId], references: [id])
   address  Address?
   products StoreProduct[]
   reviews  Review[]
